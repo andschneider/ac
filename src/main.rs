@@ -25,7 +25,7 @@ fn parse_remote(input: &str) -> Remote {
 
     Remote {
         url: input.to_string(),
-        ssh: ssh,
+        ssh,
         repo_name: repo.to_string(),
         username: "andschneider".to_string(), // hard coding for now
     }
@@ -52,6 +52,7 @@ impl Remote {
             self.username, self.repo_name
         );
     }
+    #[allow(dead_code)]
     fn create_url(&self) -> String {
         match self.ssh {
             true => self.ssh_url(),
@@ -64,20 +65,30 @@ impl Remote {
             false => self.ssh_url(),
         }
     }
+    fn flip_url(&self) {
+        // git remote set-url origin git@github.com:USERNAME/REPOSITORY.git
+        let url = self.create_url_opposite();
+        let status = Command::new("git")
+            .arg("remote")
+            .arg("set-url")
+            .arg("origin")
+            .arg(url)
+            .status()
+            .expect("failed to execute process");
+
+        println!("set url exited with: {}", status);
+        assert!(status.success());
+    }
 }
 
 fn get_git_url() -> String {
-    let mut git = Command::new("git");
-    let output = git
+    let output = Command::new("git")
         .arg("remote")
         .arg("get-url")
         .arg("--all")
         .arg("origin")
-        // Tell the OS to record the command's output
         .stdout(Stdio::piped())
-        // execute the command, wait for it to complete, then capture the output
         .output()
-        // Blow up if the OS was unable to start the program
         .unwrap();
 
     let stdout = String::from_utf8(output.stdout).unwrap();
@@ -85,27 +96,9 @@ fn get_git_url() -> String {
     return stdout.to_string();
 }
 
-fn set_git_url(url: &str) {
-    // git remote set-url origin git@github.com:USERNAME/REPOSITORY.git
-    let status = Command::new("git")
-        .arg("remote")
-        .arg("set-url")
-        .arg("origin")
-        .arg(url)
-        .status()
-        .expect("failed to execute process");
-
-    println!("set url exited with: {}", status);
-    assert!(status.success());
-}
-
 fn main() -> Result<(), Box<dyn Error>> {
     let stdout = get_git_url();
     let remote = parse_remote(&stdout);
-    let curr_url = remote.create_url();
-    let new_url = remote.create_url_opposite();
-    println!("{}", curr_url);
-    println!("{}", new_url);
-    set_git_url(&new_url);
+    remote.flip_url();
     Ok(())
 }
