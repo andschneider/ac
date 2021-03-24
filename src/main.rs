@@ -95,10 +95,64 @@ fn get_git_url() -> String {
     let stdout = stdout.trim();
     return stdout.to_string();
 }
+use structopt::StructOpt;
 
-fn main() -> Result<(), Box<dyn Error>> {
+#[derive(Debug, StructOpt)]
+// #[structopt(name = "ac", about = "andrew's CLI")]
+struct Opt {
+    #[structopt(subcommand)]
+    cmd: Option<Subcommand>,
+}
+
+#[derive(Debug, StructOpt)]
+enum Subcommand {
+    /// some git helpers
+    Git(GitArgs),
+}
+
+#[derive(Debug, StructOpt)]
+struct GitArgs {
+    #[structopt(subcommand)]
+    remote: RemoteArgs,
+}
+
+#[derive(Debug, StructOpt)]
+enum RemoteArgs {
+    /// change that remote
+    Remote {
+        // TODO is there a way to make these mutual exclusive?
+        #[structopt(short, long)]
+        flip: bool,
+        #[structopt(long)]
+        to_ssh: bool,
+        #[structopt(long)]
+        to_https: bool,
+    },
+}
+
+fn handle_git_remote_command(args: RemoteArgs) {
     let stdout = get_git_url();
     let remote = parse_remote(&stdout);
-    remote.flip_url();
+    // TODO handle more?
+    match args {
+        RemoteArgs::Remote { flip, .. } => match flip {
+            true => {
+                remote.flip_url();
+            }
+            false => {}
+        },
+    };
+}
+
+fn main() -> Result<(), Box<dyn Error>> {
+    let args = Opt::from_args();
+    // println!("{:?}", &args);
+    if let Some(subcommand) = args.cmd {
+        match subcommand {
+            Subcommand::Git(cfg) => {
+                handle_git_remote_command(cfg.remote);
+            }
+        }
+    }
     Ok(())
 }
