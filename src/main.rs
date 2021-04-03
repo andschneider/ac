@@ -4,6 +4,7 @@ use structopt::StructOpt;
 
 mod cli;
 mod git_remote;
+mod git_status;
 
 fn handle_git_remote_command(args: RemoteArgs) {
     let stdout = git_remote::get_git_url();
