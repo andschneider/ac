@@ -1,4 +1,4 @@
-use std::process::{Command, Stdio};
+use std::process::Command;
 
 /// Gets the `git status` of a repo, which is specified by its path.
 // TODO pass in a filepath object instead of string?
@@ -12,7 +12,7 @@ pub fn get_git_status(dir: &str) -> String {
 
     let stdout = String::from_utf8(output.stdout).unwrap();
     let stdout = stdout.trim();
-    return stdout.to_string();
+    stdout.to_string()
 }
 
 #[test]
@@ -30,7 +30,7 @@ fn test_git_status() {
 /// unpushed commits vs.  uncommitted changes.
 fn parse_git_status(status: &str) -> bool {
     // println!("{}", status.len());
-    return !status.is_empty();
+    !status.is_empty()
     // return status.len() != 0;
 }
 
