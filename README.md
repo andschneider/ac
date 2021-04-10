@@ -26,8 +26,10 @@ Change the remote to HTTPS
 ac git remote --to-https
 ```
 
-Check the git status of all repos in the specified `dir`
+Check the git status of all repos in the specified `dir`. If the `--modified` or
+`-m` flag is passed in only repos that have changes in them will be displayed.
+Otherwise, all repos will be displayed.
 
 ```bash
-ac git status --dir ~/Github --verbose
+ac git status --dir ~/Github [--modified]
 ```

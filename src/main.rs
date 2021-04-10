@@ -17,8 +17,10 @@ fn handle_git_remote_command(args: &ArgMatches) {
 }
 
 fn handle_git_status_command(args: &ArgMatches) {
+    // dir is guaranteed to unwrap since its a required arg
     let dir = args.value_of("dir").unwrap();
-    git_status::check_git_dirs(dir);
+    let modified = args.is_present("modified");
+    git_status::check_git_dirs(dir, modified);
 }
 
 fn run() {

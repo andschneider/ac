@@ -37,15 +37,24 @@ pub fn create_app<'a>() -> ArgMatches<'a> {
                         ),
                 )
                 .subcommand(
-                    App::new("status").about("status of repos").arg(
-                        Arg::with_name("dir")
+                    App::new("status").about("status of repos")
+                        .arg(
+                           Arg::with_name("dir")
                             .short("d")
                             .long("dir")
                             .takes_value(true)
                             .help("the dir to check")
                             .required(true),
-                    ),
+                        )
+                        .arg(
+                            Arg::with_name("modified")
+                            .short("m")
+                            .long("modified")
+                            .required(false)
+                            .takes_value(false)
+                            .help("only display the modified repos if passed in, other wise will display all repos."),
+                        ),
                 ),
-        )
-        .get_matches()
+    )
+    .get_matches()
 }

@@ -26,15 +26,27 @@ fn is_repo(entry: &DirEntry) -> bool {
 /// Checks if every directory located at the path specified is a git repo, and if it is, then checks
 /// if there are any outstanding changes. If the repo has changes, the path will be displayed
 /// prefixed by a `M` and also will be displayed red. Otherwise the path will be displayed green.
-pub fn check_git_dirs(dir: &str) {
-    let walker = WalkDir::new(dir).min_depth(1).max_depth(1).into_iter();
+pub fn check_git_dirs(dir: &str, modified_only: bool) {
+    let walker = WalkDir::new(dir)
+        .min_depth(1)
+        .max_depth(1)
+        .sort_by_file_name()
+        .into_iter();
     for entry in walker.filter_entry(|e| is_repo(e)) {
         let entry = entry.unwrap();
         let stdout = get_git_status(entry.path());
         if parse_git_status(stdout.trim()) {
-            println!("{} {}", "M".red().bold(), entry.path().display());
-        } else {
-            println!("{} {}", "✓".green(), entry.path().display());
+            println!(
+                "{} {}",
+                "M".red().bold(),
+                entry.path().file_name().unwrap().to_str().unwrap() // double unwrap to remove "" around the file name
+            );
+        } else if !modified_only {
+            println!(
+                "{} {}",
+                "✓".green(),
+                entry.path().file_name().unwrap().to_str().unwrap()
+            );
         }
     }
 }
