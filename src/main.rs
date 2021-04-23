@@ -1,4 +1,5 @@
-use clap::ArgMatches;
+use clap::{ArgMatches, Shell};
+use std::io;
 
 mod cli;
 mod git_remote;
@@ -24,8 +25,9 @@ fn handle_git_status_command(args: &ArgMatches) {
 }
 
 fn run() {
-    let matches = cli::create_app();
-    match matches.subcommand() {
+    // let matches = cli::build_cli();
+    let m = cli::build_cli().get_matches();
+    match m.subcommand() {
         ("git", Some(git_matches)) => match git_matches.subcommand() {
             ("remote", Some(remote_matches)) => {
                 handle_git_remote_command(remote_matches);
@@ -41,5 +43,17 @@ fn run() {
 
 fn main() {
     // TODO add error handling to run
+    let matches = cli::build_cli().get_matches();
+
+    if matches.is_present("generate-zsh-completions") {
+        let outdir = match std::env::var_os("OUT_DIR") {
+            None => return,
+            Some(outdir) => outdir,
+        };
+        println!("generating completions to: {:?}", outdir);
+        // cli::build_cli().gen_completions("ac", Shell::Zsh, outdir);
+        cli::build_cli().gen_completions_to("ac", Shell::Zsh, &mut io::stdout());
+        std::process::exit(0);
+    }
     run();
 }

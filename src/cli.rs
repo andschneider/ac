@@ -1,10 +1,12 @@
-use clap::{crate_version, App, AppSettings, Arg, ArgGroup, ArgMatches};
+use clap::{crate_version, App, AppSettings, Arg, ArgGroup};
 
-pub fn create_app<'a>() -> ArgMatches<'a> {
+pub fn build_cli() -> App<'static, 'static> {
     App::new("ac")
         .about("andrew's CLI")
         .version(crate_version!())
         .setting(AppSettings::ArgRequiredElseHelp)
+        .arg(Arg::with_name("generate-zsh-completions")
+                        .help("gen completions"))
         .subcommand(
             App::new("git")
                 .about("some git helpers")
@@ -56,5 +58,4 @@ pub fn create_app<'a>() -> ArgMatches<'a> {
                         ),
                 ),
     )
-    .get_matches()
 }
