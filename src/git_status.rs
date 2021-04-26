@@ -65,7 +65,7 @@ fn get_git_status(dir: &Path) -> String {
 
 #[test]
 fn test_git_status() {
-    let d = ".";
+    let d = Path::new(".");
     let status = get_git_status(d);
     println!("{}", status);
 }
