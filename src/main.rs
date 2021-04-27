@@ -1,3 +1,4 @@
+use crate::git_remote::Remote;
 use clap::ArgMatches;
 
 mod cli;
@@ -5,8 +6,7 @@ mod git_remote;
 mod git_status;
 
 fn handle_git_remote_command(args: &ArgMatches) {
-    let stdout = git_remote::get_git_url();
-    let remote = git_remote::parse_remote(&stdout);
+    let remote = Remote::new();
     if args.is_present("flip") {
         remote.flip_url();
     } else if args.is_present("to-ssh") {

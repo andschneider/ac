@@ -1,75 +1,66 @@
+use git_url_parse::{GitUrl, Scheme};
 use std::process::{Command, ExitStatus, Stdio};
-
-pub fn get_git_url() -> String {
-    let output = Command::new("git")
-        .arg("remote")
-        .arg("get-url")
-        .arg("--all")
-        .arg("origin")
-        .stdout(Stdio::piped())
-        .output()
-        .unwrap();
-
-    let stdout = String::from_utf8(output.stdout).unwrap();
-    let stdout = stdout.trim();
-    stdout.to_string()
-}
-pub fn parse_remote(input: &str) -> Remote {
-    // check the first letter of the remote url
-    let ssh = match input.chars().next().unwrap() {
-        'g' => true,
-        'h' => false,
-        _ => false, // TODO throw error
-    };
-    // TODO replace all of this with regex
-    let reversed: String = input.chars().rev().collect();
-    let first: Vec<&str> = reversed.split('.').collect();
-    let second: Vec<&str> = first[1].split('/').collect();
-    let repo = second[0];
-    let repo: String = repo.chars().rev().collect();
-
-    Remote {
-        url: input.to_string(),
-        ssh,
-        repo_name: repo,
-        username: "andschneider".to_string(), // hard coding for now
-    }
-}
 
 #[derive(PartialEq, Default, Clone, Debug)]
 pub struct Remote {
-    url: String,
-    ssh: bool,
-    repo_name: String,
-    username: String,
-}
-
-#[test]
-fn test_parse() {
-    let input = "git@github.com:andschneider/ac.git";
-    let output = parse_remote(input);
-    println!("{}", output.username);
-    assert_eq!(output.username, "andschneider");
-    assert_eq!(output.url, input);
-    assert_eq!(output.ssh, true);
-    assert_eq!(output.repo_name, "ac");
+    remote: GitUrl,
+    raw: String,
 }
 
 impl Remote {
+    pub fn new() -> Self {
+        let input = Remote::get_git_url();
+        let git_remote = Remote::parse_remote(&input);
+        Remote {
+            raw: input,
+            remote: git_remote,
+        }
+    }
+
+    fn get_git_url() -> String {
+        let output = Command::new("git")
+            .arg("remote")
+            .arg("get-url")
+            .arg("--all")
+            .arg("origin")
+            .stdout(Stdio::piped())
+            .output()
+            .unwrap();
+
+        let stdout = String::from_utf8(output.stdout).unwrap();
+        stdout.trim().to_string()
+    }
+
+    fn parse_remote(input: &str) -> GitUrl {
+        // TODO better error handling
+        GitUrl::parse(input).expect("could not parse git remote")
+    }
+
     fn ssh_url(&self) -> String {
-        format!("git@github.com:{}/{}.git", self.username, self.repo_name)
+        format!(
+            "git@github.com:{}/{}.git",
+            self.remote.owner.as_ref().unwrap(),
+            self.remote.name
+        )
     }
     fn https_url(&self) -> String {
         format!(
             "https://github.com/{}/{}.git",
-            self.username, self.repo_name
+            self.remote.owner.as_ref().unwrap(),
+            self.remote.name
         )
     }
 
     pub fn flip_url(&self) {
-        let url = match self.ssh {
-            true => self.https_url(),
-            false => self.ssh_url(),
+        let url = match self.remote.scheme {
+            Scheme::Ssh => self.https_url(),
+            Scheme::Https => self.ssh_url(),
+            Scheme::Http => self.ssh_url(),
+            _ => {
+                eprintln!("unsupported git scheme: {:?}", self.remote.scheme);
+                eprintln!("defaulting to ssh");
+                self.ssh_url()
+            }
         };
         Remote::change_url(url);
     }
@@ -96,4 +87,20 @@ impl Remote {
             .arg(url)
             .status()
     }
+}
+
+#[test]
+fn test_parse() {
+    let input = "git@github.com:andschneider/ac.git";
+    let output = Remote::parse_remote(input);
+    assert_eq!(output.owner.unwrap(), "andschneider");
+    assert_eq!(output.scheme, Scheme::Ssh);
+    assert_eq!(output.name, "ac");
+}
+
+#[test]
+fn test_build_remote() {
+    let remote = Remote::new();
+    assert_eq!(remote.remote.owner.unwrap(), "andschneider");
+    assert_eq!(remote.remote.name, "ac");
 }
