@@ -1,10 +1,8 @@
 [package]
 name = "ac"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Andrew Schneider <andjschneider@gmail.com>"]
 edition = "2018"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 clap = "2.33.3"
