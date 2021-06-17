@@ -1,6 +1,6 @@
 [package]
 name = "ac"
-version = "0.2.4"
+version = "0.2.4-alpha1"
 authors = ["Andrew Schneider <andjschneider@gmail.com>"]
 edition = "2018"
 
@@ -8,4 +8,5 @@ edition = "2018"
 clap = "2.33.3"
 colored = "2"
 git-url-parse = "0.3.1"
+thiserror = "1.0"
 walkdir = "2"

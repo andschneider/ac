@@ -4,6 +4,7 @@ use clap::ArgMatches;
 mod cli;
 mod git_remote;
 mod git_status;
+mod permissions;
 
 fn handle_git_remote_command(args: &ArgMatches) {
     let remote = Remote::new();
