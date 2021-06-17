@@ -23,7 +23,7 @@ pub type Result<T> = std::result::Result<T, PermissionError>;
 /// A Permission represents a unix file permission in octal form.
 /// The `is_dir` field is used when reading a symbolic representation, otherwise it is false.
 #[derive(Debug, Default)]
-struct Permission {
+pub struct Permission {
     is_dir: bool,
     owner: u8,
     group: u8,
@@ -36,7 +36,7 @@ impl Permission {
     /// # Examples
     ///
     /// "drwxr--r--" = Permission { is_dir: true, owner: 7, group: 4, other: 4}
-    fn from_symbolic(input: String) -> Result<Self> {
+    pub fn from_symbolic(input: String) -> Result<Self> {
         if input.chars().count() != 10 {
             return Err(PermissionError::InvalidSymbolic(input));
         }
@@ -79,7 +79,7 @@ impl Permission {
     /// # Examples
     ///
     /// 640 = Permission{is_dir: false, owner: 6, group: 4, other: 0}
-    fn from_octal(input: u16) -> Result<Self> {
+    pub fn from_octal(input: u16) -> Result<Self> {
         if input > 777 {
             return Err(PermissionError::InvalidOctal(input.to_string()));
         }
@@ -102,13 +102,13 @@ impl Permission {
 
     /// Convert to octal representation.
     /// "640"
-    fn to_octal(&self) -> String {
+    pub fn to_octal(&self) -> String {
         format!("{}{}{}", self.owner, self.group, self.other)
     }
 
     /// Convert to symbolic representation.
     /// "-rw-r-----"
-    fn to_symbol(&self) -> String {
+    pub fn to_symbolic(&self) -> String {
         let dir = match self.is_dir {
             true => "d",
             false => "-",
@@ -168,7 +168,7 @@ fn test_permission_from_symbolic() {
         let octal = perm.to_octal();
         assert_eq!(t.want, octal);
 
-        let symbolic = perm.to_symbol();
+        let symbolic = perm.to_symbolic();
         assert_eq!(t.input, symbolic);
     }
 }
@@ -215,7 +215,7 @@ fn test_permission_from_octal() {
         let octal = perm.to_octal();
         assert_eq!(t.input, octal);
 
-        let symbolic = perm.to_symbol();
+        let symbolic = perm.to_symbolic();
         assert_eq!(t.want, symbolic);
     }
 }
