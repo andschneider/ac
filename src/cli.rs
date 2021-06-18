@@ -56,5 +56,39 @@ pub fn create_app<'a>() -> ArgMatches<'a> {
                         ),
                 ),
     )
+        .subcommand(
+            App::new("permissions")
+                .about("unix file permission calculator")
+                .setting(AppSettings::SubcommandRequiredElseHelp)
+                .subcommand(
+                    App::new("convert")
+                        .about("convert octal to symbolic, or vice-versa")
+                        .arg(
+                           Arg::with_name("permission")
+                            .short("p")
+                            .long("permission")
+                            .takes_value(true)
+                            .help("the permission to convert")
+                            .required(true),
+                        )
+                        .group(
+                            ArgGroup::with_name("remote_group")
+                                .args(&["octal", "symbolic"])
+                                .required(true),
+                        )
+                        .arg(
+                            Arg::with_name("octal")
+                                .short("o")
+                                .long("octal")
+                                .help("convert to octal"),
+                        )
+                        .arg(
+                            Arg::with_name("symbolic")
+                                .short("s")
+                                .long("symbolic")
+                                .help("convert to symbolic"),
+                        )
+                )
+    )
     .get_matches()
 }
